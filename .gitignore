@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.npm-cache/
+
+# SvelteKit / Vite
+.svelte-kit/
+build/
+dist/
+.vite/
+
+# Test and coverage output
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local caches and temporary files
+.tmp/
+tmp/
+temp/
+.cache/
+
+# Local tooling
+.agents/
+.codex/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
