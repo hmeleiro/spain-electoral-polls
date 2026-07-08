@@ -12,7 +12,9 @@ export const PARTY_CONFIG: Record<string, PartyConfig> = {
   psoe: { key: 'psoe', label: 'PSOE', shortName: 'PSOE', color: '#e30613' },
   pp: { key: 'pp', label: 'PP', shortName: 'PP', color: '#1d84ce' },
   vox: { key: 'vox', label: 'Vox', shortName: 'Vox', color: '#63be21', textColor: '#17230d' },
-  sumar: { key: 'sumar', label: 'Sumar', shortName: 'Sumar', color: '#e51b7e' }
+  sumar: { key: 'sumar', label: 'Sumar', shortName: 'Sumar', color: '#e51b7e' },
+  podemos: { key: 'podemos', label: 'Podemos', shortName: 'Podemos', color: '#9169F4' },
+  salf: { key: 'salf', label: 'SALF', shortName: 'SALF', color: '#5d6470' }
 };
 
 export function normalizePartyKey(value: string | null | undefined): string {
