@@ -7,15 +7,15 @@ Current schema version: `1.0.0`.
 Cloudflare R2 object layout:
 
 ```text
-poll-of-polls/latest/manifest.json
-poll-of-polls/latest/validation_report.json
-poll-of-polls/latest/polls.parquet
-poll-of-polls/latest/poll_results.parquet
-poll-of-polls/latest/poll_average_daily.parquet
-poll-of-polls/latest/poll_deviations.parquet
-poll-of-polls/latest/house_effects.parquet
+spain-electoral-polls/latest/manifest.json
+spain-electoral-polls/latest/validation_report.json
+spain-electoral-polls/latest/polls.parquet
+spain-electoral-polls/latest/poll_results.parquet
+spain-electoral-polls/latest/poll_average_daily.parquet
+spain-electoral-polls/latest/poll_deviations.parquet
+spain-electoral-polls/latest/house_effects.parquet
 
-poll-of-polls/runs/{run_id}/...
+spain-electoral-polls/runs/{run_id}/...
 ```
 
 Use `latest/` for the dashboard. Use `runs/{run_id}/` only for debugging,
@@ -117,7 +117,7 @@ average_vote_share: numeric
 n_polls_day: integer
 ```
 
-`average_vote_share` is the daily Kalman smoothed poll-of-polls estimate.
+`average_vote_share` is the daily Kalman smoothed spain-electoral-polls estimate.
 `n_polls_day` is the number of observed poll rows for that party/date; it is
 `0` on days filled by the daily grid.
 
@@ -151,7 +151,7 @@ deviation_from_average: numeric
 ```
 
 Use this table when showing how far a poll result is above or below the
-poll-of-polls average.
+spain-electoral-polls average.
 
 ### `house_effects.parquet`
 

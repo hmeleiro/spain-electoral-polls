@@ -3,7 +3,7 @@
 Fuente base por defecto:
 
 ```text
-https://data.spainelectoralproject.com/poll-of-polls/latest
+https://data.spainelectoralproject.com/spain-electoral-polls/latest
 ```
 
 ## `manifest.json`

@@ -30,7 +30,7 @@ npm run build
 La app no usa API inicial. Lee artefactos estaticos publicados en Cloudflare/R2 desde:
 
 ```text
-PUBLIC_DATA_BASE_URL=https://data.spainelectoralproject.com/poll-of-polls/latest
+PUBLIC_DATA_BASE_URL=https://data.spainelectoralproject.com/spain-electoral-polls/latest
 ```
 
 Archivos esperados:
@@ -43,7 +43,7 @@ Archivos esperados:
 - `poll_average_daily.parquet`
 - `house_effects.parquet`
 
-La URL base vive en `.env.example` y en `src/lib/config/data.ts`; los componentes visuales no construyen URLs ni consultan Parquet directamente.
+La URL base vive en `src/lib/config/data.ts`; los componentes visuales no construyen URLs ni consultan Parquet directamente.
 
 ## Estructura
 

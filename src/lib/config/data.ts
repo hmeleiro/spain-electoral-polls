@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/public';
 
-export const DEFAULT_DATA_BASE_URL = 'https://data.spainelectoralproject.com/poll-of-polls/latest';
+export const DEFAULT_DATA_BASE_URL = 'https://data.spainelectoralproject.com/spain-electoral-polls/latest';
 
 function stripSlashes(value: string): string {
   return value.replace(/^\/+/, '').replace(/\/+$/, '');

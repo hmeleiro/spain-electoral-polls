@@ -19,7 +19,7 @@ Componentes Svelte
 
 ## Configuracion
 
-`PUBLIC_DATA_BASE_URL` define la raiz de datos. El valor por defecto apunta a `poll-of-polls/latest`, pero puede cambiar a otro prefijo sin tocar componentes.
+`PUBLIC_DATA_BASE_URL` define la raiz de datos. El valor por defecto apunta a `spain-electoral-polls/latest`, pero puede cambiar a otro prefijo sin tocar componentes.
 
 ## Estados de Datos
 
