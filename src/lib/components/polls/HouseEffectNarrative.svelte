@@ -43,7 +43,7 @@
     </div>
   {:else}
     <div class="effect-card neutral">
-      <h3>Sin efectos casa claros</h3>
+      <h3>Sin sesgos claros</h3>
       <p>No hay señales concluyentes de que esta encuestadora se aparte sistematicamente del promedio para los partidos disponibles.</p>
     </div>
   {/if}

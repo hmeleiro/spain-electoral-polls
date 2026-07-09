@@ -17,7 +17,7 @@
           <ul>
             <li><a href="/encuestas">Encuestas</a></li>
             <li><a href="/encuestadoras">Encuestadoras</a></li>
-            <li><a href="/house-effects">House effects</a></li>
+            <li><a href="/house-effects">Sesgos de encuestadora</a></li>
             <li><a href="/metodologia">Metodologia</a></li>
           </ul>
         </div>

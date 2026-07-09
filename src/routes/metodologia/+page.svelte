@@ -9,7 +9,7 @@
       Como leer este visualizador
     </h1>
     <p class="mt-5 text-lg leading-8 text-[var(--color-text-secondary)]">
-      Esta pagina recoge notas metodologicas pendientes de validacion. No introduce supuestos no presentes en los datos.
+      Este visualizador reúne encuestas electorales publicadas por distintas casas demoscópicas y permite comparar sus estimaciones, seguir su evolución en el tiempo y analizar las diferencias sistemáticas entre encuestadoras.
     </p>
   </div>
 
@@ -17,32 +17,28 @@
     <section class="panel p-5">
       <h2 class="text-xl font-semibold text-[var(--color-text)]">Origen de las encuestas</h2>
       <p class="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-        Pendiente de validacion metodologica: las encuestas proceden del dataset publicado por Spain Electoral Project
-        a partir de fuentes recopiladas en el pipeline de datos.
+        Las encuestas proceden de la base de datos de Spain Electoral Polls, construida a partir de fuentes públicas y sometida a procesos de normalización, validación y actualización.
       </p>
     </section>
 
     <section class="panel p-5">
-      <h2 class="text-xl font-semibold text-[var(--color-text)]">Promedio agregado</h2>
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">Tendencia agregada</h2>
       <p class="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-        Pendiente de validacion metodologica: el artefacto `poll_average_daily.parquet` contiene la estimacion diaria
-        agregada por partido. Esta web solo visualiza ese resultado.
+        La línea de tendencia resume la evolución estimada del apoyo a cada partido combinando las encuestas disponibles y suavizando las variaciones puntuales entre estudios.
       </p>
     </section>
 
     <section class="panel p-5">
-      <h2 class="text-xl font-semibold text-[var(--color-text)]">Comparacion con el promedio</h2>
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">Comparación con la tendencia</h2>
       <p class="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-        Cada resultado de encuesta puede compararse con el promedio agregado estimado para la fecha normalizada de
-        esa encuesta.
+        Cada estimación puede compararse con la tendencia agregada correspondiente a su fecha. La diferencia indica cuánto se sitúa una encuesta por encima o por debajo de la referencia común.
       </p>
     </section>
 
     <section class="panel p-5">
-      <h2 class="text-xl font-semibold text-[var(--color-text)]">House effects e intervalos</h2>
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">Sesgos de encuestadora</h2>
       <p class="mt-3 text-sm leading-6 text-[var(--color-text-secondary)]">
-        Un house effect mide desviaciones sistematicas respecto al conjunto de encuestas. Los intervalos expresan la
-        incertidumbre del artefacto publicado y no deben interpretarse como evidencia de intencionalidad.
+        Los sesgos de encuestadora miden si una casa demoscópica tiende a situar sistemáticamente a un partido por encima o por debajo de la tendencia general. Los intervalos reflejan la incertidumbre asociada a ese sesgo.
       </p>
     </section>
   </div>

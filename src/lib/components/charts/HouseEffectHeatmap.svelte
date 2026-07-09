@@ -8,13 +8,20 @@
 
   $: pollsters = [...new Map(effects.map((row) => [row.pollsterKey, row.pollsterName ?? row.pollsterKey])).entries()]
     .sort((a, b) => a[1].localeCompare(b[1]));
-  $: maxAbs = Math.max(1, ...effects.map((row) => Math.abs(row.houseEffect ?? 0)));
+  $: significantEffects = effects.filter(isSignificant);
+  $: maxAbs = Math.max(1, ...significantEffects.map((row) => Math.abs(row.houseEffect ?? 0)));
 
   function effectFor(pollsterKey: string, partyKey: string): HouseEffect | undefined {
     return effects.find((row) => row.pollsterKey === pollsterKey && row.partyKey === partyKey);
   }
 
-  function color(value: number | null | undefined): string {
+  function isSignificant(effect: HouseEffect | undefined): effect is HouseEffect {
+    return effect?.houseEffectStatus === 'positive' || effect?.houseEffectStatus === 'negative';
+  }
+
+  function color(effect: HouseEffect | undefined): string {
+    if (!isSignificant(effect)) return '#f3f4f6';
+    const value = effect.houseEffect;
     if (value == null) return '#f3f4f6';
     const intensity = Math.min(1, Math.abs(value) / maxAbs);
     return value > 0
@@ -39,7 +46,11 @@
           <td class="font-semibold">{pollsterName}</td>
           {#each parties as party}
             {@const effect = effectFor(pollsterKey, party.key)}
-            <td style={`background:${color(effect?.houseEffect)}`} title={formatSignedPoints(effect?.houseEffect, 1)}>
+            <td
+              class:insignificant={!isSignificant(effect)}
+              style={`background:${color(effect)}`}
+              title={formatSignedPoints(effect?.houseEffect, 1)}
+            >
               {formatSignedPoints(effect?.houseEffect, 1)}
             </td>
           {/each}
@@ -54,5 +65,11 @@
   .heatmap th:not(:first-child) {
     text-align: center;
     min-width: 6.5rem;
+  }
+
+  .heatmap td.insignificant {
+    color: var(--color-text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
   }
 </style>

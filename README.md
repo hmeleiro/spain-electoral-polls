@@ -1,6 +1,6 @@
 # Spain Electoral Poll of Polls Web
 
-Visualizador web de encuestas electorales espanolas, promedio agregado diario y house effects por encuestadora.
+Visualizador web de encuestas electorales espanolas, promedio agregado diario y sesgos de encuestadora.
 
 ## Stack
 
@@ -52,7 +52,7 @@ src/lib/config      Configuracion publica, partidos y navegacion
 src/lib/data        DuckDB-WASM, SQL, tipos, parsing y transformaciones
 src/lib/components  Layout, estados, filtros, tablas y graficos
 src/lib/utils       Fechas, formato, estadistica sencilla y URLs
-src/routes          Home, encuestas, encuestadoras, house effects y metodologia
+src/routes          Home, encuestas, encuestadoras, sesgos de encuestadora y metodologia
 docs                Modelo de datos y arquitectura
 ```
 

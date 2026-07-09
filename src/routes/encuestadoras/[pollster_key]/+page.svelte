@@ -61,9 +61,9 @@
     </section>
 
     <section class="panel mt-6 p-5">
-      <h2 class="text-xl font-semibold text-[var(--color-text)]">House effects</h2>
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">Sesgos de encuestadora</h2>
       <p class="mb-4 mt-1 text-sm text-[var(--color-text-secondary)]">
-        Lectura interpretativa de los efectos casa estimados. Los valores se expresan en puntos porcentuales.
+        Lectura interpretativa de los sesgos estimados. Los valores se expresan en puntos porcentuales.
       </p>
       <HouseEffectNarrative {effects} />
     </section>

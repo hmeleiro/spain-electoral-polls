@@ -70,7 +70,7 @@
   <title>Encuestas electorales en Espana · Spain Electoral Project</title>
   <meta
     name="description"
-    content="Seguimiento de encuestas electorales espanolas, promedio agregado y efectos casa por encuestadora."
+    content="Seguimiento de encuestas electorales espanolas, promedio agregado y sesgos por encuestadora."
   />
 </svelte:head>
 
@@ -158,9 +158,9 @@
         <p class="eyebrow">Analisis</p>
         <div class="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div class="max-w-3xl">
-            <h2 class="text-2xl font-semibold text-[var(--color-text)]">House effects por encuestadora</h2>
+            <h2 class="text-2xl font-semibold text-[var(--color-text)]">Sesgos de encuestadora</h2>
             <p class="mt-2 text-sm leading-6 text-[var(--color-text-secondary)]">
-              Un efecto casa resume si una encuestadora tiende sistematicamente a estimar a un partido por encima
+              Los sesgos de encuestadora resumen si una encuestadora tiende sistematicamente a estimar a un partido por encima
               o por debajo del promedio del conjunto de encuestas.
             </p>
           </div>

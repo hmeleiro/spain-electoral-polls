@@ -66,7 +66,7 @@ average_vote_share, deviation_from_average
 
 ## `house_effects.parquet`
 
-Efectos casa por encuestadora y partido:
+Sesgos de encuestadora por encuestadora y partido:
 
 ```text
 pollster_key, party_key, house_effect, se, ic_low, ic_high, n, house_effect_status

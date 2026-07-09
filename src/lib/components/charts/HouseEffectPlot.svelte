@@ -11,12 +11,15 @@
   const rowHeight = 30;
   const topPad = 30;
   const bottomPad = 38;
+  const facetPartyOrder = ['pp', 'psoe', 'vox', 'sumar', 'podemos', 'salf'];
 
   $: usable = effects.filter((row) => row.houseEffect != null);
   $: pollsterKeys = [...new Set(usable.map((row) => row.pollsterKey))];
   $: singlePollster = pollsterKeys.length === 1;
   $: useFacets = facetByParty && !singlePollster;
-  $: parties = [...new Map(usable.map((row) => [row.partyKey, row.party])).values()];
+  $: parties = [...new Map(usable.map((row) => [row.partyKey, row.party])).values()].sort(
+    (a, b) => partyFacetIndex(a.key) - partyFacetIndex(b.key)
+  );
   $: maxAbs = Math.max(
     1,
     ...usable.flatMap((row) => [Math.abs(row.icLow ?? 0), Math.abs(row.icHigh ?? 0), Math.abs(row.houseEffect ?? 0)])
@@ -29,6 +32,11 @@
     return usable
       .filter((row) => row.partyKey === partyKey)
       .sort((a, b) => (b.houseEffect ?? 0) - (a.houseEffect ?? 0));
+  }
+
+  function partyFacetIndex(partyKey: string): number {
+    const index = facetPartyOrder.indexOf(partyKey);
+    return index === -1 ? Number.MAX_SAFE_INTEGER : index;
   }
 
   function facetHeight(rows: HouseEffect[]): number {
@@ -51,7 +59,7 @@
     {#each parties as party}
       {@const rows = rowsForParty(party.key)}
       {@const height = facetHeight(rows)}
-      <section class="facet" aria-label={`House effects para ${party.shortName}`}>
+      <section class="facet" aria-label={`Efectos encuestadora para ${party.shortName}`}>
         <h3>{party.shortName}</h3>
         <div class="chart-frame overflow-x-auto">
           <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Forest plot de ${party.shortName}`}>
@@ -79,7 +87,7 @@
   </div>
 {:else}
   <div class="chart-frame overflow-x-auto">
-    <svg viewBox={`0 0 ${width} ${singleHeight}`} role="img" aria-label="Forest plot de efectos casa">
+    <svg viewBox={`0 0 ${width} ${singleHeight}`} role="img" aria-label="Forest plot de sesgos de encuestadora">
       <line x1={x(0)} x2={x(0)} y1={topPad - 12} y2={singleHeight - bottomPad} stroke="#1a1a2e" stroke-dasharray="4 4" />
       {#each ticks as tick}
         <line x1={x(tick)} x2={x(tick)} y1={singleHeight - bottomPad} y2={singleHeight - bottomPad + 5} stroke="#5a5a7a" />
