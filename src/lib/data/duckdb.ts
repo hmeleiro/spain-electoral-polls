@@ -1,10 +1,12 @@
 import { browser } from '$app/environment';
 import * as duckdb from '@duckdb/duckdb-wasm';
-import { dataFileUrl } from '$lib/config/data';
+import { dataFileUrl, dataVersionFromManifest, getDataVersion, setDataVersion } from '$lib/config/data';
+import { parseManifest } from '$lib/data/manifest';
 import { SOURCE_FILES } from '$lib/data/transforms';
 
 let dbPromise: Promise<duckdb.AsyncDuckDB> | null = null;
-const registeredFiles = new Map<string, Promise<void>>();
+let versionPromise: Promise<void> | null = null;
+const registeredFiles = new Map<string, { url: string; promise: Promise<void> }>();
 
 async function createDatabase(): Promise<duckdb.AsyncDuckDB> {
   if (!browser) {
@@ -29,14 +31,27 @@ async function getDatabase(): Promise<duckdb.AsyncDuckDB> {
   return dbPromise;
 }
 
+async function ensureDataVersion(): Promise<void> {
+  if (getDataVersion()) return;
+  versionPromise ??= fetch(dataFileUrl('manifest.json', { cacheBust: false }), { cache: 'no-store' }).then(async (response) => {
+    if (!response.ok) throw new Error(`No se pudo cargar manifest.json (${response.status})`);
+    const manifest = parseManifest(await response.json());
+    setDataVersion(dataVersionFromManifest(manifest));
+  });
+  await versionPromise;
+}
+
 async function registerParquetFile(db: duckdb.AsyncDuckDB, fileName: string): Promise<void> {
-  if (!registeredFiles.has(fileName)) {
-    registeredFiles.set(
-      fileName,
-      db.registerFileURL(fileName, dataFileUrl(fileName), duckdb.DuckDBDataProtocol.HTTP, false)
-    );
+  await ensureDataVersion();
+  const url = dataFileUrl(fileName);
+  const registered = registeredFiles.get(fileName);
+  if (!registered || registered.url !== url) {
+    registeredFiles.set(fileName, {
+      url,
+      promise: db.registerFileURL(fileName, url, duckdb.DuckDBDataProtocol.HTTP, false)
+    });
   }
-  await registeredFiles.get(fileName);
+  await registeredFiles.get(fileName)?.promise;
 }
 
 function rowToObject(row: unknown): Record<string, unknown> {

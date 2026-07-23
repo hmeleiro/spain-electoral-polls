@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_DATA_BASE_URL, dataFileUrl, setDataVersion } from '$lib/config/data';
 import { getPartyConfig } from '$lib/config/parties';
 import { parseManifest } from '$lib/data/manifest';
 import { parseValidationReport } from '$lib/data/validation';
@@ -71,6 +72,17 @@ describe('manifest parsing', () => {
 
     expect(report.status).toBe('passed');
     expect(report.checks.polls_columns.message).toBe('ok');
+  });
+});
+
+describe('data file URLs', () => {
+  it('versiona los ficheros de datos sin versionar el manifest inicial', () => {
+    setDataVersion('20260723T132600Z');
+
+    expect(dataFileUrl('polls.parquet')).toBe(`${DEFAULT_DATA_BASE_URL}/polls.parquet?v=20260723T132600Z`);
+    expect(dataFileUrl('manifest.json', { cacheBust: false })).toBe(`${DEFAULT_DATA_BASE_URL}/manifest.json`);
+
+    setDataVersion('');
   });
 });
 

@@ -1,4 +1,4 @@
-import { dataFileUrl } from '$lib/config/data';
+import { dataFileUrl, dataVersionFromManifest, setDataVersion } from '$lib/config/data';
 import { getPartyConfig } from '$lib/config/parties';
 import { queryRows } from '$lib/data/duckdb';
 import { parseManifest } from '$lib/data/manifest';
@@ -43,9 +43,11 @@ function cached<T>(key: string, loader: () => Promise<T>): Promise<T> {
 
 export async function loadManifest(): Promise<Manifest> {
   return cached('manifest', async () => {
-    const response = await fetch(dataFileUrl('manifest.json'), { cache: 'no-store' });
+    const response = await fetch(dataFileUrl('manifest.json', { cacheBust: false }), { cache: 'no-store' });
     if (!response.ok) throw new Error(`No se pudo cargar manifest.json (${response.status})`);
-    return parseManifest(await response.json());
+    const manifest = parseManifest(await response.json());
+    setDataVersion(dataVersionFromManifest(manifest));
+    return manifest;
   });
 }
 
