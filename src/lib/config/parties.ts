@@ -13,8 +13,8 @@ export const PARTY_CONFIG: Record<string, PartyConfig> = {
   pp: { key: 'pp', label: 'PP', shortName: 'PP', color: '#1d84ce' },
   vox: { key: 'vox', label: 'Vox', shortName: 'Vox', color: '#63be21', textColor: '#17230d' },
   sumar: { key: 'sumar', label: 'Sumar', shortName: 'Sumar', color: '#e51b7e' },
-  frente_amplio: {
-    key: 'frente_amplio',
+  fa: {
+    key: 'fa',
     label: 'Frente Amplio',
     shortName: 'Frente Amplio',
     color: '#F03C00'
