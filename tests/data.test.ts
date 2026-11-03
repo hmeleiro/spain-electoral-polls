@@ -95,6 +95,15 @@ describe('date normalization', () => {
 });
 
 describe('poll transforms', () => {
+  it('keeps Frente Amplio visually separate from Sumar', () => {
+    const sumar = getPartyConfig('sumar');
+    const frenteAmplio = getPartyConfig('frente_amplio');
+
+    expect(frenteAmplio.label).toBe('Frente Amplio');
+    expect(frenteAmplio.key).not.toBe(sumar.key);
+    expect(frenteAmplio.color).not.toBe(sumar.color);
+  });
+
   it('handles null values without leaking undefined/null strings', () => {
     const poll = normalizePoll(rawPoll);
 

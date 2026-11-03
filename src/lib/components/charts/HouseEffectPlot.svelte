@@ -11,7 +11,7 @@
   const rowHeight = 30;
   const topPad = 30;
   const bottomPad = 38;
-  const facetPartyOrder = ['pp', 'psoe', 'vox', 'sumar', 'podemos', 'salf'];
+  const facetPartyOrder = ['pp', 'psoe', 'vox', 'sumar', 'frente_amplio', 'podemos', 'salf'];
 
   $: usable = effects.filter((row) => row.houseEffect != null);
   $: pollsterKeys = [...new Set(usable.map((row) => row.pollsterKey))];
