@@ -15,9 +15,12 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2 text-xs font-bold">
-        {#each poll.results.slice(0, 4) as result}
+        {#each poll.results as result}
           <span style={`color:${result.colorHex}`}>{result.shortName} {formatPercent(result.voteShare, 1)}</span>
         {/each}
+        {#if !poll.results.some((result) => result.partyKey === 'fa_fv')}
+          <span class="missing-result">FA–FV n/d</span>
+        {/if}
       </div>
     </a>
   {/each}
@@ -33,5 +36,11 @@
   .latest-row:hover {
     border-color: var(--color-accent);
     transform: translateY(-1px);
+  }
+
+  .missing-result {
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    opacity: 0.72;
   }
 </style>

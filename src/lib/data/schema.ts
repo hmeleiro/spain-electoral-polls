@@ -48,6 +48,7 @@ export type PollResult = Poll & {
   shortName: string;
   colorHex: string;
   voteShare: number | null;
+  aggregatedFromPartyKeys?: string[];
 };
 
 export type PollDeviation = PollResult & {

@@ -1,4 +1,9 @@
-import { getPartyConfig } from '$lib/config/parties';
+import {
+  FA_FV_COMPONENT_KEYS,
+  FA_FV_PARTY_KEY,
+  getPartyConfig,
+  harmonizedPartyKey
+} from '$lib/config/parties';
 import type { PartyConfig } from '$lib/config/parties';
 import type {
   HouseEffect,
@@ -94,6 +99,72 @@ export function normalizeAveragePoint(row: RawPollAveragePoint): PollAveragePoin
   };
 }
 
+export function harmonizePollResults(rows: PollResult[]): PollResult[] {
+  return [...groupBy(rows, (row) => row.pollId).values()].flatMap((pollRows) =>
+    harmonizePollResultGroup(pollRows)
+  );
+}
+
+export function harmonizePollDeviations(rows: PollDeviation[]): PollDeviation[] {
+  return [...groupBy(rows, (row) => row.pollId).values()].flatMap((pollRows) => {
+    const canonical = pollRows.find((row) => row.partyKey === FA_FV_PARTY_KEY);
+    const components = componentRows(pollRows);
+    const otherRows = pollRows.filter((row) => !isFaFvKey(row.partyKey));
+
+    if (canonical) return sortByVoteShare([...otherRows, canonicalFaFvResult(canonical)]);
+    if (!hasBothComponents(components)) {
+      return sortByVoteShare([...otherRows, ...components.map(canonicalFaFvResult)]);
+    }
+
+    const party = getPartyConfig(FA_FV_PARTY_KEY);
+    const base = components[0];
+    const combined: PollDeviation = {
+      ...base,
+      partyKey: party.key,
+      partyName: party.label,
+      shortName: party.shortName,
+      colorHex: party.color,
+      voteShare: sumOrNull(components.map((row) => row.voteShare)),
+      averageVoteShare: sumOrNull(components.map((row) => row.averageVoteShare)),
+      deviationFromAverage: sumOrNull(components.map((row) => row.deviationFromAverage)),
+      aggregatedFromPartyKeys: [...FA_FV_COMPONENT_KEYS]
+    };
+    return sortByVoteShare([...otherRows, combined]);
+  });
+}
+
+export function harmonizeAveragePoints(rows: PollAveragePoint[]): PollAveragePoint[] {
+  return [...groupBy(rows, (row) => `${row.electionKey}\u0000${row.date}`).values()].flatMap((dateRows) => {
+    const canonical = dateRows.find((row) => row.partyKey === FA_FV_PARTY_KEY);
+    const components = componentRows(dateRows);
+    const otherRows = dateRows.filter((row) => !isFaFvKey(row.partyKey));
+
+    if (canonical) return [...otherRows, canonical];
+    if (!hasBothComponents(components)) {
+      return [
+        ...otherRows,
+        ...components.map((row) => ({
+          ...row,
+          partyKey: FA_FV_PARTY_KEY,
+          party: getPartyConfig(FA_FV_PARTY_KEY)
+        }))
+      ];
+    }
+
+    const party = getPartyConfig(FA_FV_PARTY_KEY);
+    return [
+      ...otherRows,
+      {
+        ...components[0],
+        partyKey: party.key,
+        averageVoteShare: sumOrNull(components.map((row) => row.averageVoteShare)),
+        nPollsDay: maxOrNull(components.map((row) => row.nPollsDay)),
+        party
+      }
+    ];
+  });
+}
+
 export function normalizeHouseEffect(
   row: RawHouseEffect,
   pollsterNames: Map<string, string> = new Map()
@@ -160,8 +231,9 @@ export function buildTrendSeries(averages: PollAveragePoint[], polls: PollResult
 export function availablePartiesFromResults(results: PollResult[]): PartyConfig[] {
   const seen = new Map<string, PartyConfig>();
   for (const result of results) {
-    if (!seen.has(result.partyKey)) {
-      seen.set(result.partyKey, getPartyConfig(result.partyKey, {
+    const partyKey = harmonizedPartyKey(result.partyKey);
+    if (!seen.has(partyKey)) {
+      seen.set(partyKey, getPartyConfig(partyKey, {
         label: result.partyName,
         shortName: result.shortName,
         color: result.colorHex
@@ -189,4 +261,65 @@ export function filterPollResults(
 function nullableText(value: unknown): string | null {
   const text = `${value ?? ''}`.trim();
   return text || null;
+}
+
+function harmonizePollResultGroup(rows: PollResult[]): PollResult[] {
+  const canonical = rows.find((row) => row.partyKey === FA_FV_PARTY_KEY);
+  const components = componentRows(rows);
+  const otherRows = rows.filter((row) => !isFaFvKey(row.partyKey));
+
+  if (canonical) return sortByVoteShare([...otherRows, canonicalFaFvResult(canonical)]);
+  if (!hasBothComponents(components)) {
+    return sortByVoteShare([...otherRows, ...components.map(canonicalFaFvResult)]);
+  }
+
+  const party = getPartyConfig(FA_FV_PARTY_KEY);
+  const combined: PollResult = {
+    ...components[0],
+    partyKey: party.key,
+    partyName: party.label,
+    shortName: party.shortName,
+    colorHex: party.color,
+    voteShare: sumOrNull(components.map((row) => row.voteShare)),
+    aggregatedFromPartyKeys: [...FA_FV_COMPONENT_KEYS]
+  };
+  return sortByVoteShare([...otherRows, combined]);
+}
+
+function componentRows<T extends { partyKey: string }>(rows: T[]): T[] {
+  return FA_FV_COMPONENT_KEYS.flatMap((key) => rows.filter((row) => row.partyKey === key));
+}
+
+function canonicalFaFvResult<T extends PollResult>(row: T): T {
+  const party = getPartyConfig(FA_FV_PARTY_KEY);
+  return {
+    ...row,
+    partyKey: party.key,
+    partyName: party.label,
+    shortName: party.shortName,
+    colorHex: party.color
+  };
+}
+
+function hasBothComponents(rows: Array<{ partyKey: string }>): boolean {
+  return FA_FV_COMPONENT_KEYS.every((key) => rows.some((row) => row.partyKey === key));
+}
+
+function isFaFvKey(partyKey: string): boolean {
+  return partyKey === FA_FV_PARTY_KEY || (FA_FV_COMPONENT_KEYS as readonly string[]).includes(partyKey);
+}
+
+function sumOrNull(values: Array<number | null>): number | null {
+  return values.every((value): value is number => value != null)
+    ? values.reduce((sum, value) => sum + value, 0)
+    : null;
+}
+
+function maxOrNull(values: Array<number | null>): number | null {
+  const numbers = values.filter((value): value is number => value != null);
+  return numbers.length ? Math.max(...numbers) : null;
+}
+
+function sortByVoteShare<T extends { voteShare: number | null }>(rows: T[]): T[] {
+  return rows.sort((a, b) => (b.voteShare ?? -1) - (a.voteShare ?? -1));
 }

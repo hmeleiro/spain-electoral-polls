@@ -14,6 +14,8 @@
   let loading = true;
   let errorMessage = '';
   let detail: PollDetail | null = null;
+  $: hasFaFvSum = detail?.results.some((result) => result.aggregatedFromPartyKeys?.length === 2) ?? false;
+  $: hasFaFvResult = detail?.results.some((result) => result.partyKey === 'fa_fv') ?? false;
 
   onMount(async () => {
     try {
@@ -68,6 +70,15 @@
       <section class="panel p-5">
         <h2 class="text-xl font-semibold text-[var(--color-text)]">Resultados</h2>
         <PollResultsChart results={detail.results} />
+        {#if hasFaFvSum}
+          <p class="mt-3 border-t border-[var(--color-border)] pt-3 text-xs leading-5 text-[var(--color-text-secondary)]">
+            FA–FV se muestra como la suma de Frente Amplio y Front Valencià, estimados por separado por la encuestadora.
+          </p>
+        {:else if !hasFaFvResult}
+          <p class="mt-3 border-t border-[var(--color-border)] pt-3 text-xs leading-5 text-[var(--color-text-secondary)]">
+            La encuestadora no publica una estimación para FA–FV.
+          </p>
+        {/if}
       </section>
     </div>
 

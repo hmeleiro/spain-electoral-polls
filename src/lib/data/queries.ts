@@ -1,5 +1,5 @@
 import { dataFileUrl, dataVersionFromManifest, setDataVersion } from '$lib/config/data';
-import { getPartyConfig } from '$lib/config/parties';
+import { expandHarmonizedPartyKeys, getPartyConfig, harmonizedPartyKey } from '$lib/config/parties';
 import { queryRows } from '$lib/data/duckdb';
 import { parseManifest } from '$lib/data/manifest';
 import type {
@@ -25,6 +25,9 @@ import {
   buildPollDetail,
   buildPollsterSummaries,
   buildTrendSeries,
+  harmonizeAveragePoints,
+  harmonizePollDeviations,
+  harmonizePollResults,
   normalizeAveragePoint,
   normalizeHouseEffect,
   normalizePoll,
@@ -138,7 +141,7 @@ export async function getPollResults(pollId: string): Promise<PollResult[]> {
      where poll_id = ${sqlString(pollId)}
      order by vote_share desc nulls last`
   );
-  return rows.map(normalizePollResult);
+  return harmonizePollResults(rows.map(normalizePollResult));
 }
 
 export async function getPollResultsForPolls(pollIds: string[]): Promise<Map<string, PollResult[]>> {
@@ -168,7 +171,7 @@ export async function getPollResultsForPolls(pollIds: string[]): Promise<Map<str
      order by poll_id, vote_share desc nulls last`
   );
   const grouped = new Map<string, PollResult[]>();
-  for (const result of rows.map(normalizePollResult)) {
+  for (const result of harmonizePollResults(rows.map(normalizePollResult))) {
     const current = grouped.get(result.pollId) ?? [];
     current.push(result);
     grouped.set(result.pollId, current);
@@ -203,7 +206,7 @@ export async function getPollDeviations(pollId: string): Promise<PollDeviation[]
      where poll_id = ${sqlString(pollId)}
      order by vote_share desc nulls last`
   );
-  return rows.map(normalizePollDeviation);
+  return harmonizePollDeviations(rows.map(normalizePollDeviation));
 }
 
 export async function getPollDetail(pollId: string): Promise<PollDetail | null> {
@@ -221,7 +224,7 @@ export async function getAverageSeries(
   dateRange: { from?: string; to?: string } = {}
 ): Promise<PollAveragePoint[]> {
   const clauses = [`election_key = ${sqlString(electionKey)}`];
-  if (partyKeys.length) clauses.push(`party_key in (${sqlList(partyKeys)})`);
+  if (partyKeys.length) clauses.push(`party_key in (${sqlList(expandHarmonizedPartyKeys(partyKeys))})`);
   if (dateRange.from) clauses.push(`date >= DATE ${sqlString(dateRange.from)}`);
   if (dateRange.to) clauses.push(`date <= DATE ${sqlString(dateRange.to)}`);
   const rows = await queryRows<RawPollAveragePoint>(
@@ -235,7 +238,7 @@ export async function getAverageSeries(
      where ${clauses.join(' and ')}
      order by date, party_key`
   );
-  return rows.map(normalizeAveragePoint);
+  return harmonizeAveragePoints(rows.map(normalizeAveragePoint));
 }
 
 export async function getPollSeries(
@@ -246,7 +249,7 @@ export async function getPollSeries(
 ): Promise<PollResult[]> {
   const clauses = [`election_key = ${sqlString(electionKey)}`];
   if (pollsterKeys.length) clauses.push(`pollster_key in (${sqlList(pollsterKeys)})`);
-  if (partyKeys.length) clauses.push(`party_key in (${sqlList(partyKeys)})`);
+  if (partyKeys.length) clauses.push(`party_key in (${sqlList(expandHarmonizedPartyKeys(partyKeys))})`);
   if (dateRange.from) clauses.push(`date >= DATE ${sqlString(dateRange.from)}`);
   if (dateRange.to) clauses.push(`date <= DATE ${sqlString(dateRange.to)}`);
   const rows = await queryRows<RawPollResult>(
@@ -273,7 +276,7 @@ export async function getPollSeries(
      where ${clauses.join(' and ')}
      order by date, party_key, pollster_name`
   );
-  return rows.map(normalizePollResult);
+  return harmonizePollResults(rows.map(normalizePollResult));
 }
 
 export async function getTrendSeries(
@@ -323,7 +326,7 @@ export async function getPollsterDeviations(
   partyKeys: string[] = []
 ): Promise<PollDeviation[]> {
   const clauses = [`pollster_key = ${sqlString(pollsterKey)}`, `election_key = ${sqlString(electionKey)}`];
-  if (partyKeys.length) clauses.push(`party_key in (${sqlList(partyKeys)})`);
+  if (partyKeys.length) clauses.push(`party_key in (${sqlList(expandHarmonizedPartyKeys(partyKeys))})`);
   const rows = await queryRows<RawPollDeviation>(
     `select
        poll_id,
@@ -350,7 +353,7 @@ export async function getPollsterDeviations(
      where ${clauses.join(' and ')}
      order by date, party_key`
   );
-  return rows.map(normalizePollDeviation);
+  return harmonizePollDeviations(rows.map(normalizePollDeviation));
 }
 
 export async function getHouseEffects(
@@ -392,9 +395,15 @@ export async function getLatestPolls(limit = 8): Promise<Array<Poll & { results:
 export async function getAvailableParties(electionKey?: string) {
   const manifest = await loadManifest();
   const rows = await getAverageSeries(electionKey ?? manifest.averageElectionKey);
-  const byParty = new Map(rows.map((row) => [row.partyKey, row.party]));
+  const byParty = new Map(
+    rows.map((row) => {
+      const key = harmonizedPartyKey(row.partyKey);
+      return [key, getPartyConfig(key)] as const;
+    })
+  );
   for (const partyKey of manifest.parties) {
-    if (!byParty.has(partyKey)) byParty.set(partyKey, getPartyConfig(partyKey));
+    const key = harmonizedPartyKey(partyKey);
+    if (!byParty.has(key)) byParty.set(key, getPartyConfig(key));
   }
   return [...byParty.values()];
 }

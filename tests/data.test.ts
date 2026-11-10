@@ -9,8 +9,12 @@ import {
   buildPollsterSummaries,
   buildTrendSeries,
   filterPollResults,
+  harmonizeAveragePoints,
+  harmonizePollDeviations,
+  harmonizePollResults,
   normalizeAveragePoint,
   normalizePoll,
+  normalizePollDeviation,
   normalizePollResult
 } from '$lib/data/transforms';
 import { dateToString, primaryPollDate } from '$lib/utils/dates';
@@ -130,6 +134,113 @@ describe('poll transforms', () => {
     const detail = buildPollDetail(poll, [psoe, pp], []);
 
     expect(detail.results[0].partyKey).toBe('pp');
+  });
+
+  it('sums separate FA and FV estimates into one harmonized result', () => {
+    const fa = normalizePollResult({
+      ...rawResult,
+      party_key: 'fa',
+      party_name: 'Frente Amplio',
+      short_name: 'FA',
+      vote_share: 4.2
+    });
+    const fv = normalizePollResult({
+      ...rawResult,
+      party_key: 'fv',
+      party_name: 'Front Valencià',
+      short_name: 'FV',
+      vote_share: 1.3
+    });
+
+    const results = harmonizePollResults([fa, fv]);
+
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({
+      partyKey: 'fa_fv',
+      partyName: 'Frente Amplio–Front Valencià',
+      shortName: 'FA–FV',
+      voteShare: 5.5,
+      aggregatedFromPartyKeys: ['fa', 'fv']
+    });
+  });
+
+  it('prefers a published joint FA-FV estimate without marking it as a sum', () => {
+    const joint = normalizePollResult({
+      ...rawResult,
+      party_key: 'fa_fv',
+      party_name: 'Nombre variable de origen',
+      short_name: 'FA+FV',
+      vote_share: 6.1
+    });
+    const fa = normalizePollResult({ ...rawResult, party_key: 'fa', vote_share: 4.2 });
+    const fv = normalizePollResult({ ...rawResult, party_key: 'fv', vote_share: 1.3 });
+
+    const results = harmonizePollResults([fa, joint, fv]);
+
+    expect(results).toHaveLength(1);
+    expect(results[0].voteShare).toBe(6.1);
+    expect(results[0].shortName).toBe('FA–FV');
+    expect(results[0].aggregatedFromPartyKeys).toBeUndefined();
+  });
+
+  it('keeps a single legacy component visible under the harmonized key without marking it as a sum', () => {
+    const fa = normalizePollResult({ ...rawResult, party_key: 'fa', vote_share: 4.2 });
+
+    const result = harmonizePollResults([fa])[0];
+
+    expect(result.partyKey).toBe('fa_fv');
+    expect(result.shortName).toBe('FA–FV');
+    expect(result.voteShare).toBe(4.2);
+    expect(result.aggregatedFromPartyKeys).toBeUndefined();
+  });
+
+  it('harmonizes deviations and daily averages using the component sums', () => {
+    const faDeviation = normalizePollDeviation({
+      ...rawResult,
+      party_key: 'fa',
+      party_name: 'Frente Amplio',
+      short_name: 'FA',
+      vote_share: 4.2,
+      average_vote_share: 3.9,
+      deviation_from_average: 0.3
+    });
+    const fvDeviation = normalizePollDeviation({
+      ...rawResult,
+      party_key: 'fv',
+      party_name: 'Front Valencià',
+      short_name: 'FV',
+      vote_share: 1.3,
+      average_vote_share: 1.1,
+      deviation_from_average: 0.2
+    });
+    const averages = harmonizeAveragePoints([
+      normalizeAveragePoint({
+        election_key: rawPoll.election_key,
+        party_key: 'fa',
+        date: '2026-07-04',
+        average_vote_share: 3.9,
+        n_polls_day: 2
+      }),
+      normalizeAveragePoint({
+        election_key: rawPoll.election_key,
+        party_key: 'fv',
+        date: '2026-07-04',
+        average_vote_share: 1.1,
+        n_polls_day: 2
+      })
+    ]);
+
+    expect(harmonizePollDeviations([faDeviation, fvDeviation])[0]).toMatchObject({
+      partyKey: 'fa_fv',
+      voteShare: 5.5,
+      averageVoteShare: 5,
+      deviationFromAverage: 0.5
+    });
+    expect(averages[0]).toMatchObject({
+      partyKey: 'fa_fv',
+      averageVoteShare: 5,
+      nPollsDay: 2
+    });
   });
 });
 
